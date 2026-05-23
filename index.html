@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YannDemo Tools</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ── NAVBAR ── -->
+  <nav>
+    <div class="logo">
+      <div class="logo-icon">✂</div>
+      <span class="logo-text">Tools</span>
+    </div>
+    <div class="nav-actions">
+      <button class="btn-sm btn-undo" id="undoBtn" disabled onclick="undo()">↩ Undo</button>
+      <button class="btn-sm btn-ghost" id="resetBtn" style="display:none" onclick="resetAll()">🔄 Ganti Foto</button>
+    </div>
+  </nav>
+
+  <!-- ── LAYOUT ── -->
+  <div class="layout">
+
+    <!-- ── SIDEBAR ── -->
+    <aside>
+      <div class="section-label">Tools</div>
+
+      <!-- Remove BG -->
+      <button class="tool-btn" id="btnRemoveBG" disabled onclick="handleRemoveBG()">
+        <div class="tool-inner">
+          <div class="tool-icon blue">🪄</div>
+          <div>
+            <div class="tool-name">Remove BG</div>
+            <div class="tool-desc">Hapus background otomatis dengan AI</div>
+          </div>
+        </div>
+      </button>
+
+      <!-- Eraser -->
+      <button class="tool-btn" id="btnEraser" disabled onclick="activateEraser()">
+        <div class="tool-inner">
+          <div class="tool-icon pink">🧹</div>
+          <div>
+            <div class="tool-name">Eraser</div>
+            <div class="tool-desc">Hapus area tertentu secara manual</div>
+          </div>
+        </div>
+      </button>
+
+      <!-- Eraser slider panel -->
+      <div class="slider-panel" id="sliderPanel">
+        <div class="slider-label">Ukuran Brush</div>
+        <input type="range" min="5" max="120" value="30" id="eraserSlider" oninput="updateBrush(this.value)">
+        <div class="brush-preview">
+          <div class="brush-circle" id="brushCircle" style="width:30px;height:30px"></div>
+        </div>
+        <div class="slider-val" id="sliderVal">30px</div>
+      </div>
+
+      <div class="sidebar-spacer"></div>
+
+      <!-- Status chip -->
+      <div class="status-chip" id="statusChip"></div>
+
+      <!-- Ganti foto -->
+      <button class="btn-change" id="changeBtn" onclick="document.getElementById('fileInput').click()">
+        📁 Ganti Foto
+      </button>
+    </aside>
+
+    <!-- ── MAIN AREA ── -->
+    <main>
+      <div class="glow1"></div>
+      <div class="glow2"></div>
+
+      <!-- Upload Zone -->
+      <div id="uploadZone"
+        onclick="document.getElementById('fileInput').click()"
+        ondragover="onDragOver(event)"
+        ondragleave="onDragLeave(event)"
+        ondrop="onDrop(event)">
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
+        <div class="upload-icon" id="uploadIcon">🖼️</div>
+        <div>
+          <div class="upload-title" id="uploadTitle">Upload Gambar</div>
+          <div class="upload-sub">Klik di sini atau drag &amp; drop foto kamu</div>
+        </div>
+        <div class="upload-badges">
+          <span class="badge">PNG</span>
+          <span class="badge">JPG</span>
+          <span class="badge">WEBP</span>
+          <span class="badge">GIF</span>
+        </div>
+      </div>
+
+      <!-- Canvas wrapper -->
+      <div id="canvasWrap">
+        <div class="checker">
+          <canvas id="mainCanvas"></canvas>
+        </div>
+        <canvas id="overlayCanvas"></canvas>
+        <div id="processingOverlay">
+          <div class="proc-emoji">🪄</div>
+          <div class="proc-text" id="procText">Memuat AI model...</div>
+          <div class="progress-bar-wrap">
+            <div id="progressBar"></div>
+          </div>
+          <div id="progressPct"></div>
+        </div>
+        <div id="eraserHint">🧹 Klik &amp; drag untuk menghapus</div>
+      </div>
+
+      <!-- Download button -->
+      <button id="downloadBtn" onclick="downloadImage()">
+        ⬇ Download Image
+        <span class="dl-badge">PNG</span>
+      </button>
+
+      <!-- Hint -->
+      <div id="hintText">← Pilih tool di sebelah kiri</div>
+    </main>
+
+  </div>
+
+  <!-- Custom eraser cursor -->
+  <div id="customCursor"></div>
+
+  <!-- Hidden file input -->
+  <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="onFileChange(event)">
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
