@@ -570,4 +570,344 @@ export default function ImageEditor() {
         {/* ─── CANVAS AREA ─── */}
         <main style={{
           flex: 1,
-          display: 
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "32px 24px",
+          gap: 24,
+          position: "relative",
+          overflow: "hidden",
+        }}>
+
+          {/* Background grid decoration */}
+          <div style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: `
+              linear-gradient(rgba(99,102,241,0.03) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(99,102,241,0.03) 1px, transparent 1px)
+            `,
+            backgroundSize: "40px 40px",
+            pointerEvents: "none",
+          }} />
+
+          {/* Glow orbs */}
+          <div style={{
+            position: "absolute",
+            width: 400, height: 400,
+            background: "radial-gradient(circle, rgba(99,102,241,0.07), transparent 70%)",
+            top: -100, right: -100,
+            borderRadius: "50%",
+            pointerEvents: "none",
+          }} />
+          <div style={{
+            position: "absolute",
+            width: 300, height: 300,
+            background: "radial-gradient(circle, rgba(168,85,247,0.05), transparent 70%)",
+            bottom: 0, left: -100,
+            borderRadius: "50%",
+            pointerEvents: "none",
+          }} />
+
+          {!hasImage ? (
+            /* ─── UPLOAD ZONE ─── */
+            <label htmlFor="fileInput"
+              className="upload-zone"
+              onDragOver={e => { e.preventDefault(); setIsDragOver(true); }}
+              onDragLeave={() => setIsDragOver(false)}
+              onDrop={e => { e.preventDefault(); setIsDragOver(false); handleFile(e.dataTransfer.files[0]); }}
+              style={{
+                width: "min(540px, 90vw)",
+                height: 360,
+                background: isDragOver
+                  ? "rgba(99,102,241,0.08)"
+                  : "rgba(255,255,255,0.02)",
+                border: isDragOver
+                  ? "2px dashed #6366f1"
+                  : "2px dashed rgba(255,255,255,0.1)",
+                borderRadius: 24,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                gap: 16,
+                position: "relative",
+                boxShadow: isDragOver
+                  ? "0 0 60px rgba(99,102,241,0.15), inset 0 0 30px rgba(99,102,241,0.05)"
+                  : "0 0 0 1px rgba(255,255,255,0.04)",
+                transition: "all 0.2s ease",
+              }}>
+              {/* Corner accents */}
+              {[
+                { top: 0, left: 0 },
+                { top: 0, right: 0 },
+                { bottom: 0, left: 0 },
+                { bottom: 0, right: 0 },
+              ].map((pos, i) => (
+                <div key={i} style={{
+                  position: "absolute",
+                  ...pos,
+                  width: 20, height: 20,
+                  border: "2px solid rgba(99,102,241,0.3)",
+                  borderRadius: i === 0 ? "6px 0 0 0" : i === 1 ? "0 6px 0 0" : i === 2 ? "0 0 0 6px" : "0 0 6px 0",
+                  borderRight: i === 0 || i === 2 ? "none" : undefined,
+                  borderLeft: i === 1 || i === 3 ? "none" : undefined,
+                  borderBottom: i === 0 || i === 1 ? "none" : undefined,
+                  borderTop: i === 2 || i === 3 ? "none" : undefined,
+                  pointerEvents: "none",
+                }} />
+              ))}
+
+              <div style={{
+                width: 72, height: 72,
+                background: "rgba(99,102,241,0.1)",
+                border: "1.5px solid rgba(99,102,241,0.2)",
+                borderRadius: 20,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "1.8rem",
+              }}>
+                {isDragOver ? "✨" : "🖼️"}
+              </div>
+
+              <div style={{ textAlign: "center" }}>
+                <div style={{
+                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontWeight: 700,
+                  fontSize: "1.1rem",
+                  color: "#e0e7ff",
+                  marginBottom: 6,
+                }}>
+                  {isDragOver ? "Lepas gambar di sini" : "Upload Gambar"}
+                </div>
+                <div style={{
+                  fontSize: "0.72rem",
+                  color: "#4f5a8f",
+                  marginBottom: 16,
+                }}>
+                  Drag & drop atau klik untuk pilih file
+                </div>
+                <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
+                  {["PNG", "JPG", "WEBP", "GIF"].map(f => (
+                    <span key={f} style={{
+                      background: "rgba(99,102,241,0.08)",
+                      border: "1px solid rgba(99,102,241,0.2)",
+                      color: "#818cf8",
+                      borderRadius: 6,
+                      padding: "3px 9px",
+                      fontSize: "0.6rem",
+                      fontWeight: 600,
+                      letterSpacing: "0.05em",
+                    }}>{f}</span>
+                  ))}
+                </div>
+              </div>
+            </label>
+          ) : (
+            /* ─── CANVAS + DOWNLOAD BUTTON ─── */
+            <div style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 20,
+              width: "100%",
+            }}>
+              {/* Canvas wrapper */}
+              <div ref={containerRef} style={{
+                position: "relative",
+                borderRadius: 16,
+                boxShadow: "0 0 0 1px rgba(255,255,255,0.08), 0 20px 60px rgba(0,0,0,0.5)",
+                overflow: "hidden",
+                display: "inline-block",
+              }}>
+                {/* Checker pattern (transparent BG) */}
+                <div className="checker-bg" style={{ borderRadius: 16 }}>
+                  <canvas
+                    ref={canvasRef}
+                    style={{
+                      display: "block",
+                      maxWidth: "min(860px, calc(100vw - 280px))",
+                      maxHeight: "calc(100vh - 220px)",
+                      cursor: activeTool === TOOL.ERASER ? "none" : "default",
+                      touchAction: "none",
+                      borderRadius: 16,
+                      userSelect: "none",
+                    }}
+                    onMouseDown={onPointerDown}
+                    onMouseMove={onPointerMove}
+                    onMouseUp={onPointerUp}
+                    onMouseLeave={onCanvasLeave}
+                    onTouchStart={onPointerDown}
+                    onTouchMove={onPointerMove}
+                    onTouchEnd={onPointerUp}
+                  />
+                </div>
+
+                {/* Overlay canvas (for future crop tool) */}
+                <canvas ref={overlayRef} style={{
+                  position: "absolute",
+                  top: 0, left: 0,
+                  maxWidth: "100%",
+                  maxHeight: "100%",
+                  pointerEvents: "none",
+                  borderRadius: 16,
+                }} />
+
+                {/* Processing overlay */}
+                {processing && (
+                  <div style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: "rgba(10,10,15,0.8)",
+                    backdropFilter: "blur(8px)",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 16,
+                    borderRadius: 16,
+                  }}>
+                    <div style={{ fontSize: "2.5rem", animation: "pulse 1s ease infinite" }}>🪄</div>
+                    <div style={{
+                      fontFamily: "'Space Grotesk', sans-serif",
+                      fontWeight: 700,
+                      color: "#a5b4fc",
+                      fontSize: "0.9rem",
+                    }}>
+                      {statusMsg}
+                    </div>
+                    {progress > 0 && (
+                      <div style={{ width: 200 }}>
+                        <div style={{
+                          height: 6,
+                          background: "rgba(255,255,255,0.08)",
+                          borderRadius: 99,
+                          overflow: "hidden",
+                        }}>
+                          <div style={{
+                            height: "100%",
+                            width: `${progress}%`,
+                            background: "linear-gradient(90deg, #6366f1, #a855f7, #6366f1)",
+                            backgroundSize: "200% auto",
+                            borderRadius: 99,
+                            animation: "progress-shimmer 2s linear infinite",
+                            transition: "width 0.3s",
+                          }} />
+                        </div>
+                        <div style={{
+                          textAlign: "center",
+                          fontSize: "0.65rem",
+                          color: "#6366f1",
+                          marginTop: 6,
+                          fontWeight: 700,
+                        }}>{progress}%</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Tool hint badge */}
+                {!processing && activeTool === TOOL.ERASER && (
+                  <div style={{
+                    position: "absolute",
+                    top: 12, left: "50%",
+                    transform: "translateX(-50%)",
+                    background: "rgba(236,72,153,0.9)",
+                    backdropFilter: "blur(8px)",
+                    borderRadius: 20,
+                    padding: "4px 14px",
+                    fontSize: "0.65rem",
+                    fontWeight: 600,
+                    color: "white",
+                    whiteSpace: "nowrap",
+                    pointerEvents: "none",
+                    animation: "fadeUp 0.2s ease",
+                  }}>
+                    🧹 Drag untuk menghapus area
+                  </div>
+                )}
+              </div>
+
+              {/* ─── DOWNLOAD BUTTON ─── */}
+              <button
+                className="action-btn download-btn"
+                onClick={handleDownload}
+                style={{
+                  background: "linear-gradient(135deg, #6366f1, #a855f7)",
+                  border: "none",
+                  borderRadius: 14,
+                  padding: "14px 40px",
+                  color: "white",
+                  fontFamily: "'Space Grotesk', sans-serif",
+                  fontWeight: 700,
+                  fontSize: "0.95rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  letterSpacing: "0.02em",
+                }}>
+                <span style={{ fontSize: "1.1rem" }}>⬇</span>
+                Download Image
+                <span style={{
+                  background: "rgba(255,255,255,0.2)",
+                  borderRadius: 6,
+                  padding: "2px 8px",
+                  fontSize: "0.65rem",
+                  fontWeight: 600,
+                  letterSpacing: "0.08em",
+                }}>PNG</span>
+              </button>
+
+              {/* Hint when no tool selected */}
+              {!processing && activeTool === TOOL.NONE && (
+                <div style={{
+                  fontSize: "0.65rem",
+                  color: "#2d2d4a",
+                  background: "rgba(255,255,255,0.02)",
+                  border: "1px solid rgba(255,255,255,0.04)",
+                  borderRadius: 8,
+                  padding: "5px 14px",
+                }}>
+                  ← Pilih tool di sebelah kiri
+                </div>
+              )}
+            </div>
+          )}
+        </main>
+      </div>
+
+      {/* ─── CUSTOM ERASER CURSOR ─── */}
+      {showCursor && activeTool === TOOL.ERASER && (
+        <div style={{
+          position: "fixed",
+          left: cursorPos.x,
+          top: cursorPos.y,
+          width: eraserSize * (canvasRef.current
+            ? canvasRef.current.getBoundingClientRect().width / canvasRef.current.width
+            : 1),
+          height: eraserSize * (canvasRef.current
+            ? canvasRef.current.getBoundingClientRect().height / canvasRef.current.height
+            : 1),
+          borderRadius: "50%",
+          border: "2px solid rgba(236,72,153,0.8)",
+          background: "rgba(236,72,153,0.1)",
+          transform: "translate(-50%, -50%)",
+          pointerEvents: "none",
+          zIndex: 9999,
+          mixBlendMode: "screen",
+        }} />
+      )}
+
+      <input
+        id="fileInput"
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={e => handleFile(e.target.files[0])}
+      />
+    </div>
+  );
+                  }
